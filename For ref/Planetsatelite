@@ -1,0 +1,87 @@
+/* globals define */
+define(function(require, exports, module) {
+    'use strict';
+    // import dependencies
+    var Engine = require('famous/core/Engine');
+    var Surface = require('famous/core/Surface')
+    var Modifier = require('famous/core/Modifier');
+    var PhysicsEngine = require('famous/physics/PhysicsEngine');
+    var Particle = require('famous/physics/bodies/Particle');
+    var Drag = require('famous/physics/forces/Drag');
+    var RepulsionForce = require('famous/physics/forces/Repulsion')
+
+    var context = Engine.createContext();
+
+    var physics = new PhysicsEngine();
+
+    var planetSurface = new Surface({
+        properties: {
+            backgroundColor: 'blue'
+        }
+    });
+
+    var planetParticle = new Particle({
+        position:[0,0,0]
+    });
+
+    physics.addBody(planetParticle);
+
+    var planetModifier = new Modifier({
+        size: [100, 100],
+        align: [0.5, 0.5],
+        origin: [0.5, 0.5],
+        transform: function() {
+            return planetParticle.getTransform();
+        }
+    });
+
+    var sateliteSurface = new Surface({
+        properties: {
+            backgroundColor: 'gray'
+        }
+    });
+
+    var sateliteParticle = new Particle({
+        position: [-100, -100, 0]
+    });
+
+    physics.addBody(sateliteParticle);
+
+    var sateliteModifier = new Modifier({
+        size: [25, 25],
+        align: [0.5, 0.5],
+        origin: [0.5, 0.5],
+        transform: function() {
+            return sateliteParticle.getTransform();
+        }
+    });
+
+    var gravity = new RepulsionForce({
+        strength: -2
+    });
+
+    physics.attach(gravity, sateliteParticle, planetParticle);
+    sateliteParticle.setVelocity([0.1, 0, 0]);
+
+    var repel = new RepulsionForce({
+        strength: 2
+    });
+
+    physics.attach(repel, sateliteParticle);
+
+
+
+   var dragForce = new Drag({
+   strength: 0.001
+   });
+
+    physics.attach(dragForce, planetParticle);
+
+   //planetParticle.setVelocity([0.1, 0.1, 0]);
+
+    context.add(planetModifier).add(planetSurface);
+    context.add(sateliteModifier).add(sateliteSurface);
+
+
+   
+});

@@ -1,0 +1,62 @@
+//globals define 
+define(function(require, exports, module) {
+    'use strict';
+    // import dependencies
+    var Engine = require('famous/core/Engine');
+    var Surface = require('famous/core/Surface')
+    var Modifier = require('famous/core/Modifier');
+    var PhysicsEngine = require('famous/physics/PhysicsEngine');
+    var Particle = require('famous/physics/bodies/Particle');
+    var Drag = require('famous/physics/forces/Drag');
+    var RepulsionForce = require('famous/physics/forces/Repulsion')
+
+    var positionsArray = [-140,-70,0,70,140];
+
+    var context = Engine.createContext();
+
+    var physics = new PhysicsEngine();
+
+    var planetParticle = new Particle({
+        position:[0,0,0]
+    });
+
+    physics.addBody(planetParticle);
+
+    var gridItem = [];
+    var gridItemParticle = [];
+    var gridItemModifier = [];
+
+    function gridItemTrans() {
+            return gridItemParticle[this.row][this.col].getTransform();
+        }
+
+    
+    for (var rows = 0; rows < 5; rows += 1){
+        gridItem[rows] = [];
+        gridItemParticle[rows] = [];
+        gridItemModifier[rows] = [];
+        for (var cols = 0; cols < 5; cols += 1){
+           gridItem [rows][cols] = new Surface({
+            properties: {
+                backgroundColor: '#23AD23'
+            }
+            }); 
+
+           gridItemParticle[rows][cols] = new Particle({
+            position: [positionsArray[rows], positionsArray[cols], 0]
+           });
+
+           physics.addBody(gridItemParticle[rows][cols]);
+
+           gridItemModifier[rows][cols] = new Modifier({
+            size: [50,50],
+            align: [0.5, 0.5],
+            origin: [0.5, 0.5],
+            transform: gridItemTrans.bind({row: rows, col: cols})
+           });
+
+           context.add(gridItemModifier[rows][cols]).add(gridItem[rows][cols]);
+        }
+    }
+    
+});

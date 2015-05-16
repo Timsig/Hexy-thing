@@ -1,0 +1,105 @@
+//globals define 
+define(function(require, exports, module) {
+    'use strict';
+    // import dependencies
+    var Engine          = require('famous/core/Engine');
+    var View            = require('famous/core/View');
+    var Surface         = require('famous/core/Surface')
+    var Modifier        = require('famous/core/Modifier');
+    var StateModifier   = require('famous/core/StateModifier');
+    var PhysicsEngine   = require('famous/physics/PhysicsEngine');
+    var Transitionable  = require('famous/transitions/Transitionable');
+    var SpringTransition= require('famous/transitions/SpringTransition');
+    var Particle        = require('famous/physics/bodies/Particle');
+    var Drag            = require('famous/physics/forces/Drag');
+    var RepulsionForce  = require('famous/physics/forces/Repulsion');
+    var Wall            = require('famous/physics/constraints/Wall');
+    var Random          = require('famous/math/Random');
+
+    //var positionsArray = [-140,-70,0,70,140];
+
+    var context = Engine.createContext();
+
+    var physics = new PhysicsEngine();
+
+    var planetParticle = new Particle({
+        position:[0,0,0]
+    });
+
+    physics.addBody(planetParticle);
+
+    var gridItem = [];
+    var gridItemParticle = [];
+    var gridItemModifier = [];
+    var sq1;
+    var sq2;
+
+    var leftWall    = new Wall({normal : [1,0,0],  distance : 165, restitution : 0.5});
+    var rightWall   = new Wall({normal : [-1,0,0], distance : 165, restitution : 0.5});
+    var topWall     = new Wall({normal : [0,1,0],  distance : 165, restitution : 0.5});
+    var bottomWall  = new Wall({normal : [0,-1,0], distance : 165, restitution : 0.5});
+
+    var centralG = new RepulsionForce({
+        strength: 1
+    });
+
+    var gridR = new RepulsionForce({
+        strength: -3
+    });
+
+    function gridItemTrans() {
+        return gridItemParticle[this.ind].getTransform();
+    }
+
+    //function addCentralGravity(){
+
+    //}
+
+    function addGridRepulsion(){
+        for(var i = 0; i < gridItemParticle.length; i += 1){
+            sq1 = gridItemParticle[i];
+            /*if ((i + 1) < gridItemParticle.length){
+                for (var j = 1; j < gridItemParticle.length; j+=1){
+                    sq2 = gridItemParticle[j];
+                    physics.attach(gridR, sq1, sq2);
+
+                }
+            }*/
+            physics.attach([leftWall, rightWall, topWall, bottomWall], gridItemParticle[i]);
+            physics.attach(centralG, planetParticle, gridItemParticle[i]);
+        }
+
+    }
+
+    
+    for(var i = 0; i < 25; i += 1){
+        //var x = Random.integer(0,140);
+       // var y = Random.integer(0,140);
+       gridItem[i] = new Surface({
+            properties: {
+                backgroundColor: '#23AD23'
+            }
+            }); 
+
+           gridItemParticle[i] = new Particle({
+            //position: [x,y]
+           });
+
+           physics.addBody(gridItemParticle[i]);
+           
+
+           gridItemModifier[i] = new Modifier({
+            size: [50,50],
+            align: [0.5, 0.5],
+            origin: [0.5, 0.5],
+            transform: gridItemTrans.bind({ind: i})
+           });
+
+           context.add(gridItemModifier[i]).add(gridItem[i]);
+        
+    }
+    addGridRepulsion();
+    console.log(gridItemParticle.length);
+    
+    
+});
